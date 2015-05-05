@@ -25,6 +25,19 @@ if grep -q "CentOS release 5" "/etc/redhat-release"; then
 	exit
 fi
 
+keysize=$keysize
+
+ while getopts ":l" opt; do
+  case $opt in
+    l)
+      keysize=4096
+      ;;
+    \?)
+      echo "Invalid option: -$OPTARG" >&2
+      ;;
+  esac
+done
+
 if [[ -e /etc/debian_version ]]; then
 	OS=debian
 	RCLOCAL='/etc/rc.local'
@@ -210,7 +223,7 @@ else
 	# Let's fix one thing first...
 	cp -u -p openssl-1.0.0.cnf openssl.cnf
 	# Fuck you NSA - 1024 bits was the default for Debian Wheezy and older
-	sed -i 's|export KEY_SIZE=1024|export KEY_SIZE=2048|' /etc/openvpn/easy-rsa/2.0/vars
+	sed -i "s|export KEY_SIZE=1024|export KEY_SIZE=$keysize|" /etc/openvpn/easy-rsa/2.0/vars
 	# Create the PKI
 	. /etc/openvpn/easy-rsa/2.0/vars
 	. /etc/openvpn/easy-rsa/2.0/clean-all
@@ -235,10 +248,10 @@ else
 	fi
 	cp server.conf /etc/openvpn/
 	cd /etc/openvpn/easy-rsa/2.0/keys
-	cp ca.crt ca.key dh2048.pem server.crt server.key /etc/openvpn
+	cp ca.crt ca.key dh$keysize.pem server.crt server.key /etc/openvpn
 	cd /etc/openvpn/
 	# Set the server configuration
-	sed -i 's|dh dh1024.pem|dh dh2048.pem|' server.conf
+	sed -i "s|dh dh1024.pem|dh dh$keysize.pem|" server.conf
 	sed -i 's|;push "redirect-gateway def1 bypass-dhcp"|push "redirect-gateway def1 bypass-dhcp"|' server.conf
 	sed -i "s|port 1194|port $PORT|" server.conf
 	# DNS
