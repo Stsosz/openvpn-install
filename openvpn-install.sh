@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # OpenVPN road warrior installer for Debian, Ubuntu and CentOS
 
 # This script will work on Debian, Ubuntu, CentOS and probably other distros
